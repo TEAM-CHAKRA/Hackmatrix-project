@@ -1,0 +1,325 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===========================================================================
+   CYBERLENS design tokens — official brand palette
+   Cyan Pulse #00D1B2 · Midnight Grid #001F3F · Pure Signal #FFFFFF · Carbon Core #2E2E2E
+   =========================================================================== */
+:root {
+  --cyan-pulse: #00d1b2;
+  --midnight-grid: #001f3f;
+  --pure-signal: #ffffff;
+  --carbon-core: #2e2e2e;
+
+  /* Refined professional dark surfaces */
+  --surface-base: #020b16;
+  --surface-panel: rgba(4, 15, 28, 0.88);
+  --surface-strong: rgba(3, 11, 22, 0.94);
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --surface-border-subtle: rgba(255, 255, 255, 0.05);
+
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  html {
+    background-color: #00122a;
+  }
+  html,
+  body {
+    @apply text-white/85 antialiased;
+  }
+  /* Body stays transparent so the fixed site background (z-index:-10) shows through. */
+  body {
+    background-color: transparent;
+  }
+  body {
+    font-family: theme('fontFamily.sans');
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: rgba(0, 209, 178, 0.25);
+    color: #ffffff;
+  }
+  :focus-visible {
+    outline: 2px solid var(--cyan-pulse);
+    outline-offset: 2px;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #01070e;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #0f2a48;
+    border-radius: 4px;
+    border: 1px solid #01070e;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #173d66;
+  }
+}
+
+@layer components {
+  /* --- Surfaces & Panels -------------------------------------------------- */
+  .glass,
+  .glass-card {
+    position: relative;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.02) 45%, rgba(0, 209, 178, 0.025) 100%),
+      rgba(0, 31, 63, 0.26);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    backdrop-filter: blur(18px) saturate(150%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.10),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.02),
+      0 20px 50px -24px rgba(0, 0, 0, 0.7);
+  }
+  /* Top-edge reflection */
+  .glass::after,
+  .glass-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, transparent 30%);
+  }
+
+  .glass-strong {
+    position: relative;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 50%, rgba(0, 209, 178, 0.035) 100%),
+      rgba(0, 25, 52, 0.38);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(22px) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 30px 70px -28px rgba(0, 0, 0, 0.8),
+      0 0 60px -30px rgba(0, 209, 178, 0.35);
+  }
+
+  /* Recessed well inside a glass card (inputs, inner rows, code) */
+  .glass-inset {
+    background: rgba(0, 10, 24, 0.32);
+    border-color: rgba(255, 255, 255, 0.07);
+  }
+
+  .glass-hover {
+    transition:
+      transform 0.25s ease,
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .glass-hover:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 209, 178, 0.35);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 24px 60px -24px rgba(0, 0, 0, 0.8),
+      0 0 40px -18px rgba(0, 209, 178, 0.45);
+  }
+
+  /* Component surface */
+  .panel {
+    @apply glass-card rounded-xl;
+  }
+  .panel-pad {
+    @apply p-5 sm:p-7;
+  }
+
+  /* Subtle technical hairline accent */
+  .edge-glow {
+    position: relative;
+  }
+  .edge-glow::before {
+    content: '';
+    position: absolute;
+    inset-x: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 209, 178, 0.6) 50%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* --- Typography --------------------------------------------------------- */
+  .eyebrow {
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-white/50;
+  }
+  .section-title {
+    @apply font-display text-lg font-semibold tracking-tight text-white;
+  }
+  .display-xl {
+    @apply font-display font-bold leading-[1.05] tracking-[-0.03em] text-white;
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, #ffffff 30%, #00d1b2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* --- Buttons ------------------------------------------------------------ */
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-150
+      active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100;
+  }
+  .btn-primary {
+    @apply btn bg-signal font-semibold text-midnight;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background-color: #19e3c5;
+  }
+  .btn-secondary {
+    @apply btn border border-white/15 bg-white/[0.05] text-white hover:border-white/30 hover:bg-white/[0.09] hover:text-white;
+  }
+  .btn-ghost {
+    @apply btn text-white/70 hover:bg-white/[0.06] hover:text-white;
+  }
+
+  /* --- Inputs ------------------------------------------------------------- */
+  .input {
+    @apply w-full rounded-lg border border-white/[0.12] px-4 py-3 text-[14px] text-white
+      placeholder:text-white/35 transition focus:border-signal focus:outline-none focus:ring-1 focus:ring-signal/30;
+    background-color: rgba(0, 12, 26, 0.45);
+  }
+
+  .mono {
+    @apply font-mono;
+  }
+  .kv-row {
+    @apply flex flex-col gap-0.5 border-b border-white/[0.06] py-2.5 last:border-0 sm:flex-row sm:items-baseline sm:gap-4;
+  }
+  .kv-key {
+    @apply shrink-0 text-xs text-white/50 sm:w-44;
+  }
+  .kv-val {
+    @apply min-w-0 break-words font-mono text-[13px] text-white/90;
+  }
+
+  /* Faint technical grid */
+  .grid-faint {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  /* Clean subtle connector line */
+  .flow-line {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(0, 209, 178, 0.7), rgba(255, 255, 255, 0.08));
+  }
+  .flow-line-y {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 209, 178, 0.7), rgba(255, 255, 255, 0.08));
+  }
+}
+
+/* --- Site motion & section bands ---------------------------------------- */
+@keyframes cl-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(6%, 4%, 0); }
+}
+.cl-drift { animation: cl-drift 40s ease-in-out infinite; }
+
+/* Slow push-in on the hero photograph */
+@keyframes cl-kenburns {
+  from { transform: scale(1.04); }
+  to { transform: scale(1.12); }
+}
+.cl-kenburns { animation: cl-kenburns 38s ease-out forwards; transform-origin: 50% 40%; }
+
+/* Light travelling along the corridor's ceiling rails */
+@keyframes cl-rail {
+  0% { transform: translateY(-30%); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(160%); opacity: 0; }
+}
+.cl-rail { animation: cl-rail 6.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+/* Hero entrance */
+@keyframes cl-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+.cl-rise { animation: cl-rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* Carbon Core band — breaks the page rhythm between midnight sections */
+.band-carbon {
+  position: relative;
+  background:
+    radial-gradient(60% 80% at 85% 0%, rgba(0, 209, 178, 0.06), transparent 70%),
+    radial-gradient(45% 60% at 15% 100%, rgba(0, 209, 178, 0.07), transparent 70%),
+    linear-gradient(180deg, rgba(46, 46, 46, 0.92) 0%, rgba(34, 36, 39, 0.92) 55%, rgba(26, 28, 31, 0.94) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Soft light pools placed behind glass sections so the frosting reads */
+.glass-light {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 9999px;
+  filter: blur(60px);
+  z-index: -1;
+}
+
+/* In-page anchors clear the sticky navbar */
+h2[id], section[id] { scroll-margin-top: 110px; }
+
+@media print {
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .panel,
+  .glass {
+    border-color: #ccc !important;
+    background: #fff !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* --- Navbar ------------------------------------------------------------- */
+@keyframes nav-shimmer {
+  0%, 55% { transform: translateX(0) skewX(-20deg); }
+  100% { transform: translateX(400%) skewX(-20deg); }
+}
+.nav-shimmer { animation: nav-shimmer 3.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .nav-shimmer { animation: none; opacity: 0; }
+}
+
+/* --- Background fibre pulses -------------------------------------------- */
+@keyframes cl-fibre-pulse {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+.cl-fibre-pulse { animation: cl-fibre-pulse 7s linear infinite; }

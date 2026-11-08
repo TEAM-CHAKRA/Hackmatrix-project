@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+build/
+coverage/
+
+# Environment & secrets — never commit
+.env
+.env.local
+.env.*.local
+backend/.env
+blockchain/.env
+*.pem
+*.key
+
+# Hardhat / Foundry
+contracts/.env
+contracts/cache/
+contracts/artifacts/
+contracts/deployments/localhost.json
+blockchain/cache/
+blockchain/artifacts/
+blockchain/typechain-types/
+blockchain/out/
+
+# Logs & OS
+*.log
+npm-debug.log*
+.DS_Store
+.vscode/
+.idea/
