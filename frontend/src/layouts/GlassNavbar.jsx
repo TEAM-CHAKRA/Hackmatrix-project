@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring } from 'framer-motion';
 import { Menu, X, ArrowRight, ArrowUpRight, LogOut, UserRound, Home, ScanSearch, Radio, Users, ShieldCheck } from 'lucide-react';
-import { getHealth } from '../services/api.js';
+import { getHealth, onBackendWaking } from '../services/api.js';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { useScanNow } from '../hooks/useScanNow.js';
 import { cx } from '../utils/format.js';
@@ -19,6 +19,7 @@ const STATUS = {
   checking: { dot: 'bg-white/50', ring: '', label: 'Checking backend' },
   online: { dot: 'bg-signal', ring: 'bg-signal', label: 'Backend online' },
   degraded: { dot: 'bg-amber-400', ring: 'bg-amber-400', label: 'Backend degraded' },
+  waking: { dot: 'bg-amber-400', ring: 'bg-amber-400', label: 'Waking up server…' },
   offline: { dot: 'bg-red-500', ring: '', label: 'Backend offline' },
   demo: { dot: 'bg-amber-400', ring: 'bg-amber-400', label: 'Demo mode' },
 };
@@ -27,11 +28,13 @@ function useBackendStatus() {
   const [status, setStatus] = useState('checking');
   useEffect(() => {
     let alive = true;
+    const off = onBackendWaking((waking) => alive && waking && setStatus('waking'));
     getHealth()
       .then((h) => alive && setStatus(h.demo ? 'demo' : h.status === 'ok' ? 'online' : 'degraded'))
       .catch(() => alive && setStatus('offline'));
     return () => {
       alive = false;
+      off();
     };
   }, []);
   return status;
@@ -42,7 +45,7 @@ function StatusDot({ status, size = 'h-2 w-2' }) {
   return (
     <span className={cx('relative flex', size)} title={s.label}>
       {s.ring && <span className={cx('absolute inline-flex h-full w-full animate-ping rounded-full opacity-60', s.ring)} />}
-      <span className={cx('relative inline-flex rounded-full', size, s.dot, status === 'checking' && 'animate-pulse')} />
+      <span className={cx('relative inline-flex rounded-full', size, s.dot, (status === 'checking' || status === 'waking') && 'animate-pulse')} />
       <span className="sr-only">{s.label}</span>
     </span>
   );

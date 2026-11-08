@@ -23,7 +23,7 @@ export default function AuthShell({ title, subtitle, children, footer }) {
             <span>
               {USE_MOCKS
                 ? 'Sign-in is off in demo mode.'
-                : 'Sign-in service is offline right now.'}
+                : 'Sign-in service is offline right now. If the server was asleep, wait a minute and reload the page.'}
             </span>
           </div>
         )}

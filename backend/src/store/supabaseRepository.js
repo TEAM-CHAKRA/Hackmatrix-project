@@ -30,7 +30,12 @@ const PG_UNIQUE_VIOLATION = '23505';
 
 // Keep a reference to the platform fetch so code (or tests) that patch
 // globalThis.fetch for outbound scanning never break database calls.
-const platformFetch = globalThis.fetch.bind(globalThis);
+const nativeFetch = globalThis.fetch.bind(globalThis);
+const DB_TIMEOUT_MS = 15000;
+// Every database call gets a time limit, so a slow network can never leave the
+// server hanging (e.g. while it starts up and checks the schema).
+const platformFetch = (input, init = {}) =>
+  nativeFetch(input, init.signal ? init : { ...init, signal: AbortSignal.timeout(DB_TIMEOUT_MS) });
 
 function normalizeKey(key) {
   if (typeof key !== 'string') return key;

@@ -23,6 +23,59 @@ export class ApiError extends Error {
 const SAFE_METHODS = new Set(['GET', 'HEAD']);
 let csrfToken = null;
 
+// ---- Waking a sleeping backend ------------------------------------------------
+// Free hosting (e.g. Render) stops the backend after ~15 idle minutes; the first
+// request then takes up to a minute while it starts, and the hosting proxy may
+// answer 502/503/504 meanwhile. Before talking to a backend we haven't heard from
+// recently, ping /health/live until it answers, so real requests (especially
+// POSTs) are only sent once it is awake and are never sent twice.
+const WAKE_STATUSES = new Set([502, 503, 504]);
+const AWAKE_FOR_MS = 10 * 60 * 1000;
+const WAKE_LIMIT_MS = 120 * 1000;
+let lastAwakeAt = 0;
+let wakingPromise = null;
+const wakeListeners = new Set();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Subscribe to "backend is waking up" changes; returns an unsubscribe function. */
+export function onBackendWaking(listener) {
+  wakeListeners.add(listener);
+  return () => wakeListeners.delete(listener);
+}
+
+function wakeBackend() {
+  if (wakingPromise) return wakingPromise;
+  wakingPromise = (async () => {
+    const until = Date.now() + WAKE_LIMIT_MS;
+    let announced = false;
+    while (Date.now() < until) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 30000);
+      try {
+        const res = await fetch(`${BASE}/health/live`, { cache: 'no-store', credentials: 'include', signal: controller.signal });
+        if (res.ok) {
+          lastAwakeAt = Date.now();
+          return true;
+        }
+      } catch {
+        /* still starting */
+      } finally {
+        clearTimeout(timer);
+      }
+      if (!announced) {
+        announced = true;
+        wakeListeners.forEach((fn) => fn(true));
+      }
+      await sleep(3000);
+    }
+    return false;
+  })().finally(() => {
+    wakeListeners.forEach((fn) => fn(false));
+    wakingPromise = null;
+  });
+  return wakingPromise;
+}
+
 async function fetchCsrfToken() {
   try {
     const res = await request('/auth/csrf', { timeoutMs: 6000, csrf: false });
@@ -33,7 +86,8 @@ async function fetchCsrfToken() {
   return csrfToken;
 }
 
-async function request(path, { method = 'GET', body, timeoutMs = 20000, csrf = true, retried = false } = {}) {
+async function request(path, { method = 'GET', body, timeoutMs = 20000, csrf = true, retried = false, wakeRetried = false } = {}) {
+  if (Date.now() - lastAwakeAt > AWAKE_FOR_MS) await wakeBackend();
   const needsCsrf = csrf && !SAFE_METHODS.has(method);
   if (needsCsrf && !csrfToken) await fetchCsrfToken();
   const headers = {};
@@ -60,6 +114,23 @@ async function request(path, { method = 'GET', body, timeoutMs = 20000, csrf = t
     throw new ApiError('Cannot reach the CYBERLENS server. Reload the page; if it keeps happening, make sure the backend and frontend are running.', { code: 'NETWORK' });
   }
   clearTimeout(timer);
+
+  // Hosting proxy says the backend is asleep or restarting.
+  if (WAKE_STATUSES.has(res.status) && !(res.headers.get('content-type') || '').includes('application/json')) {
+    lastAwakeAt = 0;
+    const awake = await wakeBackend();
+    // Safe to repeat only reads; a write may or may not have reached the server.
+    if (awake && SAFE_METHODS.has(method) && !wakeRetried) {
+      return request(path, { method, body, timeoutMs, csrf, retried, wakeRetried: true });
+    }
+    throw new ApiError(
+      awake
+        ? 'The server was waking up. Please try again now.'
+        : 'The CYBERLENS server is starting up. Free hosting sleeps when idle, so this can take a minute. Please try again shortly.',
+      { status: res.status, code: 'BACKEND_WAKING' }
+    );
+  }
+  lastAwakeAt = Date.now();
 
   let data = null;
   const text = await res.text();

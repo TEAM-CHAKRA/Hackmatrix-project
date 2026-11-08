@@ -187,8 +187,10 @@ export function loadEnv(source = process.env) {
   if (Boolean(e.ADMIN_EMAIL) !== Boolean(e.ADMIN_PASSWORD)) problems.push('ADMIN_EMAIL and ADMIN_PASSWORD must be set together.');
 
   // Trust proxy: '', 'true'/'false', hop count, or subnet list
+  // On Render with no setting, trust 2 hops: Render's load balancer + the Vercel
+  // rewrite proxy in front of it, so rate limits see the real visitor IP.
   const tp = e.TRUST_PROXY;
-  e.TRUST_PROXY = tp === '' ? false : /^(true|false)$/i.test(tp) ? /^true$/i.test(tp) : Number.isInteger(Number(tp)) ? Number(tp) : tp;
+  e.TRUST_PROXY = tp === '' ? (source.RENDER ? 2 : false) : /^(true|false)$/i.test(tp) ? /^true$/i.test(tp) : Number.isInteger(Number(tp)) ? Number(tp) : tp;
 
   if (problems.length) throw new EnvError(problems);
   return e;

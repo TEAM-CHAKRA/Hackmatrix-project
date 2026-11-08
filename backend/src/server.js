@@ -16,6 +16,7 @@ if (env.SESSION_SECRET_EPHEMERAL) {
 async function start() {
   // Database: confirm Supabase is reachable and set up before serving anything.
   if (repository.kind === 'supabase') {
+    logger.info('🗄️  Connecting to Supabase…');
     const { ok, checks } = await checkSupabaseSchema(repository);
     if (!ok) {
       logger.error('🗄️  Supabase is not ready:');
