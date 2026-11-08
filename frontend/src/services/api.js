@@ -86,7 +86,7 @@ async function fetchCsrfToken() {
   return csrfToken;
 }
 
-async function request(path, { method = 'GET', body, timeoutMs = 20000, csrf = true, retried = false, wakeRetried = false } = {}) {
+async function request(path, { method = 'GET', body, timeoutMs = 20000, csrf = true, retried = false, wakeRetried = false, startedAt = Date.now() } = {}) {
   if (Date.now() - lastAwakeAt > AWAKE_FOR_MS) await wakeBackend();
   const needsCsrf = csrf && !SAFE_METHODS.has(method);
   if (needsCsrf && !csrfToken) await fetchCsrfToken();
@@ -115,13 +115,34 @@ async function request(path, { method = 'GET', body, timeoutMs = 20000, csrf = t
   }
   clearTimeout(timer);
 
-  // Hosting proxy says the backend is asleep or restarting.
-  if (WAKE_STATUSES.has(res.status) && !(res.headers.get('content-type') || '').includes('application/json')) {
+  let data = null;
+  const text = await res.text();
+  const isJson = (res.headers.get('content-type') || '').includes('application/json');
+  let parsed = null;
+  if (text && isJson) {
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      parsed = null;
+    }
+  }
+
+  // The backend is asleep or restarting: the hosting proxy answers 502/503/504
+  // with an HTML page, or the backend itself says SERVER_STARTING.
+  const starting = parsed?.error?.code === 'SERVER_STARTING';
+  if (starting && Date.now() - startedAt < WAKE_LIMIT_MS) {
+    // The backend refused this request without processing it, so it is safe to
+    // send again (writes included) once startup has had a moment to finish.
+    wakeListeners.forEach((fn) => fn(true));
+    await sleep(3000);
+    return request(path, { method, body, timeoutMs, csrf, retried, wakeRetried, startedAt });
+  }
+  if (WAKE_STATUSES.has(res.status) && (!isJson || starting)) {
     lastAwakeAt = 0;
     const awake = await wakeBackend();
     // Safe to repeat only reads; a write may or may not have reached the server.
     if (awake && SAFE_METHODS.has(method) && !wakeRetried) {
-      return request(path, { method, body, timeoutMs, csrf, retried, wakeRetried: true });
+      return request(path, { method, body, timeoutMs, csrf, retried, wakeRetried: true, startedAt });
     }
     throw new ApiError(
       awake
@@ -132,13 +153,14 @@ async function request(path, { method = 'GET', body, timeoutMs = 20000, csrf = t
   }
   lastAwakeAt = Date.now();
 
-  let data = null;
-  const text = await res.text();
   if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new ApiError(`Unexpected response from server (HTTP ${res.status}).`, { status: res.status, code: 'BAD_RESPONSE' });
+    if (parsed) data = parsed;
+    else {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new ApiError(`Unexpected response from server (HTTP ${res.status}).`, { status: res.status, code: 'BAD_RESPONSE' });
+      }
     }
   }
 

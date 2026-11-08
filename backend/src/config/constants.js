@@ -17,6 +17,7 @@ export const ERROR_CODES = {
   CHAIN_UNAVAILABLE: 'CHAIN_UNAVAILABLE',// 503
   NOT_READY: 'NOT_READY',               // 503
   INTERNAL: 'INTERNAL',                 // 500
+  SERVER_STARTING: 'SERVER_STARTING',   // 503 (still connecting to the database after a restart)
 };
 
 export const USER_ROLES = ['user', 'admin'];

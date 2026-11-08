@@ -6,6 +6,7 @@ import { sessionStore } from './services/auth/sessionStore.js';
 import { blockchainService } from './services/blockchainService.js';
 import { repository } from './store/repository.js';
 import { checkSupabaseSchema, failInterruptedInvestigations } from './store/dbCheck.js';
+import { beginStartup, finishStartup } from './middleware/startupGate.js';
 
 const PORT = env.PORT || 4000;
 
@@ -13,7 +14,7 @@ if (env.SESSION_SECRET_EPHEMERAL) {
   logger.warn('SESSION_SECRET not set: using a random per-process secret (everyone is signed out on restart).');
 }
 
-async function start() {
+async function prepare() {
   // Database: confirm Supabase is reachable and set up before serving anything.
   if (repository.kind === 'supabase') {
     logger.info('🗄️  Connecting to Supabase…');
@@ -35,7 +36,7 @@ async function start() {
     logger.info('🗄️  Database: in-memory (data resets on restart; set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY to persist)');
   }
 
-  // Optional admin account from ADMIN_EMAIL / ADMIN_PASSWORD (before listening).
+  // Optional admin account from ADMIN_EMAIL / ADMIN_PASSWORD (before requests are let through).
   if (env.ADMIN_EMAIL) {
     try {
       await authService.bootstrapAdmin({ email: env.ADMIN_EMAIL, password: env.ADMIN_PASSWORD, fullName: env.ADMIN_NAME });
@@ -52,12 +53,26 @@ async function start() {
       ? `⛓️  Blockchain: ${chain.network} (contract ${chain.contractAddress})`
       : '⛓️  Blockchain: not configured (registration disabled; see docs/SETUP.md)'
   );
+}
 
+async function start() {
+  // Listen first, so the hosting platform sees the service as up right away;
+  // API requests wait in the startup gate until prepare() has finished.
+  beginStartup();
   const server = app.listen(PORT, () => {
     logger.info(`🚀 CYBERLENS Backend listening on http://localhost:${PORT}`);
     logger.info(`🔗 Base API path: http://localhost:${PORT}/api`);
     logger.info(`🩺 Health check: http://localhost:${PORT}/api/health`);
   });
+
+  try {
+    await prepare();
+    finishStartup();
+    logger.info('✅ Ready to serve requests.');
+  } catch (err) {
+    logger.error(`Startup failed: ${err.message}`);
+    process.exit(1);
+  }
 
   function handleShutdown(signal) {
     logger.info(`Received ${signal}. Shutting down CYBERLENS backend gracefully...`);
@@ -79,6 +94,9 @@ process.on('unhandledRejection', (reason) => {
 
 process.on('uncaughtException', (err) => {
   logger.error('Uncaught Exception:', { error: err.message, stack: err.stack });
+  // The process may now be in a broken state (e.g. stuck without answering).
+  // Exit so the hosting platform restarts a clean copy.
+  process.exit(1);
 });
 
 start();

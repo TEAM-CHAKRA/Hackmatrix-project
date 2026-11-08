@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { env } from './config/env.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { sessionMiddleware } from './middleware/session.js';
+import { startupGate } from './middleware/startupGate.js';
 import { sendError } from './utils/response.js';
 import { ERROR_CODES } from './config/constants.js';
 
@@ -49,6 +50,9 @@ app.get('/', (req, res) => {
 
 // Health first: liveness must not depend on body parsing or the session store
 app.use('/api', healthRoutes);
+
+// Everything else waits until startup (database check, admin account) is done.
+app.use('/api', startupGate);
 
 // Body parsing and sessions for everything else under /api
 app.use('/api', express.json({ limit: env.JSON_BODY_LIMIT }));

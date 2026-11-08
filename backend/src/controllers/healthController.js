@@ -1,3 +1,4 @@
+import { isStarting } from '../middleware/startupGate.js';
 import { env } from '../config/env.js';
 import { sendSuccess } from '../utils/response.js';
 import { repository } from '../store/repository.js';
@@ -167,6 +168,7 @@ export async function getReadiness(req, res, next) {
     ]);
     const configOk = Boolean(env.SESSION_SECRET && env.SESSION_SECRET.length >= 32 && env.FRONTEND_ORIGINS?.length);
     const checks = {
+      startup: isStarting() ? 'unavailable' : 'ok',
       repository: repo ? 'ok' : 'unavailable',
       session: session ? 'ok' : 'unavailable',
       config: configOk ? 'ok' : 'unavailable',

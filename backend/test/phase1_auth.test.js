@@ -257,7 +257,7 @@ describe('Phase 1 — health liveness/readiness and config', () => {
     const live = await request(app).get('/api/health/live').expect(200);
     assert.equal(live.body.status, 'alive');
     const ready = await request(app).get('/api/health/ready').expect(200);
-    assert.deepEqual(ready.body.checks, { repository: 'ok', session: 'ok', config: 'ok' });
+    assert.deepEqual(ready.body.checks, { startup: 'ok', repository: 'ok', session: 'ok', config: 'ok' });
     sessionStore.available = false;
     const down = await request(app).get('/api/health/ready').expect(503);
     assert.equal(down.body.checks.session, 'unavailable');
