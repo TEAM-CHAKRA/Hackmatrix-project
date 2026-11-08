@@ -1,0 +1,62 @@
+[
+  {
+    "id": "diginotar",
+    "name": "DigiNotar",
+    "patterns": ["DigiNotar", "DigiNotar Root CA"],
+    "date": "2011-09-02",
+    "authority": "Mozilla / Google Chrome",
+    "sourceUrl": "https://blog.mozilla.org/security/2011/09/02/diginotar-removal-follow-up",
+    "additionalSources": [
+      "https://blog.mozilla.org/security/2011/08/29/fraudulent-google-com-certificate/"
+    ],
+    "scope": "Mozilla completely removed DigiNotar from its root program (not a temporary suspension); an initial exemption for some Dutch government certificates was later withdrawn.",
+    "reason": "Compromised CA infrastructure and fraudulent issuance of unauthorized wildcard certificates."
+  },
+  {
+    "id": "wosign_startcom",
+    "name": "WoSign / StartCom",
+    "patterns": ["WoSign", "WoSign CA", "Certification Authority WoSign", "StartCom", "StartSSL", "StartCom Certification Authority"],
+    "date": "2016-10-24",
+    "authority": "Mozilla / Google Chrome",
+    "sourceUrl": "https://blog.mozilla.org/security/2016/10/24/distrusting-new-wosign-and-startcom-certificates/",
+    "additionalSources": [
+      "https://groups.google.com/a/chromium.org/g/net-dev/c/FKXe-76GO8Y/m/Ka8K5lj9AgAJ"
+    ],
+    "scope": "(a) from 2016-10-21 newly issued certificates were distrusted; (b) from Chrome 61 (September 2017) Chrome removed trust in all certificates issued by these CAs.",
+    "reason": "Backdating certificates to bypass SHA-1 deprecation, undisclosed change of ownership, and failure to maintain CA baseline requirements."
+  },
+  {
+    "id": "cnnic",
+    "name": "CNNIC (China Internet Network Information Center)",
+    "patterns": ["CNNIC", "China Internet Network Information Center"],
+    "date": "2015-04-01",
+    "authority": "Google Chrome / Mozilla",
+    "sourceUrl": "https://security.googleblog.com/2015/03/maintaining-digital-certificate-security.html",
+    "scope": "Certificates issued after 2015-04-01 by CNNIC root and intermediate CAs.",
+    "notBeforeAfter": "2015-04-01",
+    "reason": "Subordinate CA MCS Holdings issued unauthorized man-in-the-middle certificates for Google domains."
+  },
+  {
+    "id": "symantec",
+    "name": "Symantec Root Family (Symantec legacy roots)",
+    "patterns": ["Symantec"],
+    "date": "2017-09-11",
+    "authority": "Google Chrome / Mozilla",
+    "sourceUrl": "https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html",
+    "scope": "Certificates issued before 2016-06-01 distrusted in Chrome 66 (2018-04-17); all remaining certificates issued under Symantec root hierarchy distrusted in Chrome 70 (2018-10-23). Does not apply to chains including a DigiCert root.",
+    "notBeforeBefore": "2018-12-01",
+    "requireNoDigiCertRoot": true,
+    "reason": "Repeated issuance irregularities, misissued certificates, and failure of CA audit compliance."
+  },
+  {
+    "id": "trustcor",
+    "name": "TrustCor Systems",
+    "patterns": ["TrustCor", "TrustCor Systems"],
+    "date": "2022-11-30",
+    "authority": "Mozilla / Microsoft",
+    "sourceUrl": "https://groups.google.com/a/mozilla.org/g/dev-security-policy/c/oxX69KFvsm4",
+    "notBeforeAfter": "2022-11-30",
+    "scope": "Mozilla set a distrust-after date of 2022-11-30 for TLS and S/MIME on three TrustCor roots, so certificates issued after that date are distrusted and the roots are removed once existing certificates expire; Microsoft set 2022-11-01.",
+    "reason": "concerns about TrustCor's corporate and technical ties to spyware-related companies; no evidence of certificate mis-issuance was presented."
+  }
+]
