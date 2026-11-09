@@ -14,7 +14,7 @@
 ![Tests](https://img.shields.io/badge/tests-180_%2B_12_passing-00D1B2)
 
 <a href="https://youtu.be/DHYAYxKJ13k" title="Watch the CYBERLENS demo on YouTube">
-  <img src="docs/CYBERLENS_Thumbnail.jpg.jpeg" alt="CYBERLENS demo: scanning a suspicious link and viewing the evidence-based report. Click to watch the full video." width="800">
+  <img src="docs/cyberlens-demo.gif" alt="CYBERLENS demo: phishing link detected, scam SMS exposed, report verified on the blockchain. Click to watch the full video." width="800">
 </a>
 
 **[▶ Watch the full demo video](https://youtu.be/DHYAYxKJ13k)** · **[🌐 Try it live](https://cyberlens-liart.vercel.app)**
