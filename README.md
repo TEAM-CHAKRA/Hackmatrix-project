@@ -13,6 +13,13 @@
 ![Gemini](https://img.shields.io/badge/Gemini_AI-001F3F?logo=googlegemini&logoColor=00D1B2)
 ![Tests](https://img.shields.io/badge/tests-180_%2B_12_passing-00D1B2)
 
+<a href="https://youtu.be/DHYAYxKJ13k" title="Watch the CYBERLENS demo on YouTube">
+  <img src="docs/CYBERLENS_LIVE_DEMO.mp4" alt="CYBERLENS demo: scanning a suspicious link and viewing the evidence-based report. Click to watch the full video." width="800">
+</a>
+
+**[▶ Watch the full demo video](https://youtu.be/DHYAYxKJ13k)** · **[🌐 Try it live](https://cyberlens-liart.vercel.app)**
+
+
 *Built by **Team CHAKRA** for **HackMatrix***
 
 </div>
